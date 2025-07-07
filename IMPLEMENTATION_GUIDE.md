@@ -40,13 +40,26 @@ A modular API-driven AI agent that processes financial data (CSV/Excel) and prov
 
 7. **Session Management (`src/utils/cache.py`)**
    - In-memory data caching per session
+   - Persistent storage integration
    - Automatic session expiry and cleanup
    - Thread-safe operations
+
+8. **Data Storage (`src/utils/storage.py`)**
+   - Persistent session data storage
+   - File-based DataFrame preservation
+   - Session metadata management
+   - Storage statistics and cleanup
 
 8. **Data Validation (`src/utils/validators.py`)**
    - File format and size validation
    - Query input sanitization
    - DataFrame structure validation
+
+9. **Data Storage (`src/utils/storage.py`)**
+   - Persistent session data storage
+   - File-based DataFrame preservation
+   - Session metadata management
+   - Storage statistics and cleanup
 
 ## 🚀 Quick Start
 
@@ -162,6 +175,8 @@ GET /api/v1/insights/{session_id}
 GET /api/v1/session/{session_id}      # Get session info
 DELETE /api/v1/session/{session_id}   # Delete session
 GET /api/v1/cache/stats               # Cache statistics
+GET /api/v1/storage/sessions          # List stored sessions
+GET /api/v1/storage/stats             # Storage statistics
 ```
 
 ## 💡 Sample Queries

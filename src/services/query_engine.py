@@ -178,11 +178,15 @@ class QueryEngine:
             if detected_cols['date'] and detected_cols['date'] in df.columns:
                 date_col = df[detected_cols['date']]
                 if pd.api.types.is_datetime64_any_dtype(date_col):
+                    # Convert Period objects to strings for JSON serialization
+                    monthly_counts = df.groupby(date_col.dt.to_period('M')).size()
+                    monthly_counts_dict = {str(period): int(count) for period, count in monthly_counts.items()}
+                    
                     stats['date_statistics'] = {
                         'earliest_date': str(date_col.min()),
                         'latest_date': str(date_col.max()),
-                        'date_range_days': (date_col.max() - date_col.min()).days,
-                        'transactions_per_month': df.groupby(date_col.dt.to_period('M')).size().to_dict()
+                        'date_range_days': int((date_col.max() - date_col.min()).days),
+                        'transactions_per_month': monthly_counts_dict
                     }
             
         except Exception as e:

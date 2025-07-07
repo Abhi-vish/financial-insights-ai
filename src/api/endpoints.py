@@ -21,6 +21,7 @@ from src.services.data_processor import DataProcessor
 from src.services.query_engine import QueryEngine
 from src.utils.validators import data_validator
 from src.utils.cache import session_cache
+from src.utils.storage import data_storage
 from src.core.config import settings
 
 # Configure logging
@@ -277,6 +278,7 @@ async def get_session_info(session_id: str):
             },
             "data_summary": {
                 "total_rows": session_data.data_summary.total_rows,
+                "total_columns": len(session_data.data_summary.columns),
                 "columns": session_data.data_summary.columns,
                 "date_range": session_data.data_summary.date_range,
                 "total_amount": session_data.data_summary.total_amount,
@@ -354,16 +356,61 @@ async def cleanup_expired_sessions():
     """
     try:
         session_cache.cleanup_expired_sessions()
+        
+        # Also cleanup old storage files
+        storage_cleaned = data_storage.cleanup_old_sessions(max_age_hours=24)
+        
         stats = session_cache.get_cache_stats()
         
         return {
             "message": "Expired sessions cleaned up successfully",
+            "storage_sessions_cleaned": storage_cleaned,
             "current_stats": stats
         }
         
     except Exception as e:
         logger.error(f"❌ Error cleaning up sessions: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error cleaning up sessions: {str(e)}")
+
+
+@router.get("/storage/sessions")
+async def list_stored_sessions():
+    """
+    List all sessions in persistent storage
+    
+    Returns:
+        List of stored sessions
+    """
+    try:
+        sessions = data_storage.list_sessions()
+        storage_stats = data_storage.get_storage_stats()
+        
+        return {
+            "stored_sessions": sessions,
+            "total_count": len(sessions),
+            "storage_stats": storage_stats
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error listing stored sessions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error listing stored sessions: {str(e)}")
+
+
+@router.get("/storage/stats")
+async def get_storage_statistics():
+    """
+    Get detailed storage statistics
+    
+    Returns:
+        Storage statistics
+    """
+    try:
+        stats = data_storage.get_storage_stats()
+        return stats
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting storage stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting storage stats: {str(e)}")
 
 
 # Background task functions
