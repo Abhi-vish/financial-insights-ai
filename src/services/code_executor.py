@@ -56,11 +56,34 @@ class CodeExecutor:
             'specific', 'exact', 'find', 'search', 'lookup', 'locate', 
             'when did', 'what date', 'which date', 'on what date',
             'ID', 'reference', 'record', 'row', 'entry', 'item', 'individual',
-            'show me', 'get me', 'retrieve', 'fetch'
+            'show me', 'get me', 'retrieve', 'fetch', 'customer_id', 'customer id',
+            'transaction_id', 'transaction id', 'this customer', 'this transaction',
+            'of this', 'for this', 'spent amount', 'spending by'
         ]
         
         query_lower = query.lower()
-        return any(indicator in query_lower for indicator in code_indicators)
+        
+        # Check for specific patterns that indicate code queries
+        specific_patterns = [
+            r'customer[_\s]+id[_\s]+[A-Z0-9]+',  # customer_id C356
+            r'transaction[_\s]+id[_\s]+[A-Z0-9]+',  # transaction_id T100008
+            r'id[_\s]+[A-Z0-9]+',  # ID C356
+            r'[A-Z]\d+',  # C356, T100008
+            r'this\s+customer',  # this customer
+            r'this\s+transaction',  # this transaction
+        ]
+        
+        # Check for keyword indicators
+        has_keyword = any(indicator in query_lower for indicator in code_indicators)
+        
+        # Check for specific patterns using regex
+        import re
+        has_pattern = any(re.search(pattern, query_lower) for pattern in specific_patterns)
+        
+        result = has_keyword or has_pattern
+        logger.info(f"🔍 Query analysis: '{query}' -> {'CODE' if result else 'AI'} (keyword: {has_keyword}, pattern: {has_pattern})")
+        
+        return result
     
     def generate_code_from_query(self, query: str, df: pd.DataFrame, file_path: str) -> str:
         """
