@@ -1,0 +1,7 @@
+temp_folder
+.env
+test_api.py
+sample_financial_data.csv
+data
+.venv
+__pycache__
