@@ -2,7 +2,7 @@
 
 A powerful, modular API-driven AI agent that processes financial data and provides intelligent insights using Google's Gemini 2.0 Flash model. Built with pure Python without heavy frameworks like LangChain or CrewAI.
 
-![Project Overview](media\financial_ai_agent_banner.png)
+![Project Overview](https://raw.githubusercontent.com/Abhi-vish/financial-insights-ai/refs/heads/dev/media/financial_ai_agent_banner.png?token=GHSAT0AAAAAADF7LXBNHXIOLDBKDQNAM6QO2DMZFMA)
 
 ## 🌟 Key Features
 
