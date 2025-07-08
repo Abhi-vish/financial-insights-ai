@@ -2,7 +2,7 @@
 
 A powerful, modular API-driven AI agent that processes financial data and provides intelligent insights using Google's Gemini 2.0 Flash model. Built with pure Python without heavy frameworks like LangChain or CrewAI.
 
-![Project Overview](https://raw.githubusercontent.com/Abhi-vish/financial-insights-ai/refs/heads/dev/media/financial_ai_agent_banner.png?token=GHSAT0AAAAAADF7LXBNHXIOLDBKDQNAM6QO2DMZFMA)
+![Project Overview](media/financial_ai_agent_banner.png)
 
 ## 🌟 Key Features
 
@@ -39,13 +39,13 @@ A powerful, modular API-driven AI agent that processes financial data and provid
 ## 🏗️ Architecture
 
 ### System Architecture
-![System Architecture](https://raw.githubusercontent.com/Abhi-vish/financial-insights-ai/refs/heads/dev/media/system_architecture_diagram.png?token=GHSAT0AAAAAADF7LXBNPSGE7ZTM3YSC6IYW2DMYTBA)
+![System Architecture](media/system_architecture_diagram.png)
 
 ### Data Flow Diagram
-![Data Flow](https://raw.githubusercontent.com/Abhi-vish/financial-insights-ai/refs/heads/dev/media/flowchart_diagram.png?token=GHSAT0AAAAAADF7LXBNV3AEGLO4MIAONWSU2DMYTLQ)
+![Data Flow](media/flowchart_diagram.png)
 
 ### Sequence Diagram
-![Sequence Diagram](https://raw.githubusercontent.com/Abhi-vish/financial-insights-ai/refs/heads/dev/media/sequence_diagram.png?token=GHSAT0AAAAAADF7LXBNGHAZYD6ZOZ57WCTU2DMYT6Q)
+![Sequence Diagram](media/sequence_diagram.png)
 
 ### 🧩 **Component Overview**
 
@@ -533,33 +533,7 @@ python app.py --info
 ```bash
 # Start server in debug mode
 DEBUG=True python main.py
-
-# Enable detailed logging
-python debug_query_decision.py
 ```
-
-## 🤝 Contributing
-
-### **Getting Started**
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests for new functionality
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
-
-### **Code Standards**
-- **PEP 8**: Follow Python style guidelines
-- **Type Hints**: Use type hints for better code clarity
-- **Documentation**: Update docstrings and comments
-- **Testing**: Add tests for new features
-
-### **Pull Request Process**
-1. Update the README.md with details of changes
-2. Update the CHANGES.md with new features
-3. Ensure all tests pass
-4. Get approval from maintainers
 
 
 ## 🙏 Acknowledgments
