@@ -460,37 +460,6 @@ financial-data-ai-agent/
 └── temp_folder/           # Temporary files
 ```
 
-### **Adding New Features**
-
-#### **1. New Query Types**
-1. Update `is_code_query()` in `src/services/code_executor.py`
-2. Add new prompt templates in `src/services/prompt_templates.py`
-3. Update query type detection logic
-
-#### **2. New Data Formats**
-1. Extend `DataProcessor` in `src/services/data_processor.py`
-2. Add format-specific validation in `src/utils/validators.py`
-3. Update file upload handling in `src/api/endpoints.py`
-
-#### **3. New API Endpoints**
-1. Add routes in `src/api/endpoints.py`
-2. Create corresponding Pydantic models in `src/models/schemas.py`
-3. Update API documentation
-
-### **Testing**
-
-```bash
-# Run the test suite
-python -m pytest tests/
-
-# Test specific components
-python test_api.py                    # API endpoints
-python test_code_execution.py         # Code execution
-python debug_query_decision.py        # Query decision logic
-
-# Manual testing
-python insights_demo.py              # Insights generation
-```
 
 ## 🔒 Security
 
