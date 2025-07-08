@@ -142,6 +142,29 @@ Provide a comprehensive answer that addresses the user's specific question.
 """
     
     @staticmethod
+    def get_code_execution_template() -> str:
+        """Template for queries that require code execution"""
+        return """
+You are a financial data analyst AI that can write and execute pandas code to answer specific questions.
+
+TASK: The user is asking for specific information that requires searching the complete dataset.
+
+GUIDELINES:
+1. You will write pandas code to search the full dataset
+2. Look for specific transactions, dates, or records
+3. Use exact matching when possible
+4. Provide clear, specific answers based on the actual data
+5. If nothing is found, clearly state that
+
+FINANCIAL DATA CONTEXT:
+{data_summary}
+
+USER QUERY: {query}
+
+Write pandas code to find the specific information requested. The DataFrame is available as 'df'.
+"""
+
+    @staticmethod
     def detect_query_type(query: str) -> str:
         """
         Detect the type of query to select appropriate template
@@ -154,8 +177,12 @@ Provide a comprehensive answer that addresses the user's specific question.
         """
         query_lower = query.lower()
         
+        # Code execution queries (specific data lookups)
+        if any(word in query_lower for word in ['transaction id', 'transaction', 'T100', 'specific', 'exact', 'find', 'search', 'lookup', 'when did', 'what date', 'which date']):
+            return 'code_execution'
+        
         # Category-related queries
-        if any(word in query_lower for word in ['category', 'categories', 'type', 'types', 'spend on', 'spending on']):
+        elif any(word in query_lower for word in ['category', 'categories', 'type', 'types', 'spend on', 'spending on']):
             return 'category'
         
         # Time-related queries
@@ -192,6 +219,7 @@ Provide a comprehensive answer that addresses the user's specific question.
         query_type = PromptTemplates.detect_query_type(query)
         
         templates = {
+            'code_execution': PromptTemplates.get_code_execution_template(),
             'category': PromptTemplates.get_category_analysis_template(),
             'time': PromptTemplates.get_time_analysis_template(),
             'comparison': PromptTemplates.get_comparison_template(),

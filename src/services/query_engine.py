@@ -7,12 +7,14 @@ This module orchestrates the data processing and AI analysis pipeline.
 import pandas as pd
 from typing import Dict, Any, Optional
 import logging
+import traceback
 from datetime import datetime
 from typing import List
 
 from src.core.gemini_client import gemini_client
 from src.services.data_processor import DataProcessor
 from src.services.prompt_templates import PromptBuilder
+from src.services.code_executor import CodeExecutor
 from src.models.schemas import QueryResponse
 from src.utils.cache import session_cache
 
@@ -28,6 +30,7 @@ class QueryEngine:
         """Initialize the query engine"""
         self.data_processor = DataProcessor()
         self.prompt_builder = PromptBuilder()
+        self.code_executor = CodeExecutor()
         logger.info("✅ Query engine initialized")
     
     async def process_query(self, session_id: str, query: str) -> QueryResponse:
@@ -54,6 +57,100 @@ class QueryEngine:
             if df is None:
                 raise ValueError(f"No DataFrame found for session {session_id}")
             
+            # Check if this query requires code execution
+            is_code_query = self.code_executor.is_code_query(query)
+            logger.info(f"🔍 Query analysis: '{query}' -> {'CODE' if is_code_query else 'AI'}")
+            
+            if is_code_query:
+                logger.info("🔧 Query requires code execution - generating and executing code")
+                return await self._process_code_query(session_id, query, df)
+            else:
+                logger.info("🤖 Query uses AI analysis - generating text summary")
+                return await self._process_ai_query(session_id, query, df)
+                
+        except Exception as e:
+            logger.error(f"❌ Error processing query: {str(e)}")
+            # Return error response
+            return QueryResponse(
+                query=query,
+                answer=f"Error processing query: {str(e)}",
+                insights=[],
+                data_points={},
+                confidence="low",
+                limitations=f"Processing error: {str(e)}",
+                timestamp=datetime.now()
+            )
+    
+    async def _process_code_query(self, session_id: str, query: str, df: pd.DataFrame) -> QueryResponse:
+        """Process queries that require code execution"""
+        try:
+            logger.info(f"🔧 Starting code query processing for: {query}")
+            
+            # Get the CSV file path from storage
+            from src.utils.storage import data_storage
+            csv_file_path = data_storage.base_path / session_id / "data.csv"
+            
+            if not csv_file_path.exists():
+                logger.error(f"❌ CSV file not found: {csv_file_path}")
+                raise ValueError(f"CSV file not found for session {session_id}")
+            
+            # Convert path to string with proper formatting (avoid encoding issues)
+            csv_file_path_str = str(csv_file_path).replace('\\', '/')
+            logger.info(f"🔍 Using CSV file path: {csv_file_path_str}")
+            
+            # Generate code using Gemini
+            logger.info("🤖 Generating code using Gemini...")
+            code = self.code_executor.generate_code_from_query(query, df, csv_file_path_str)
+            logger.info(f"✅ Code generated ({len(code)} characters)")
+            
+            # Execute the code
+            logger.info("⚡ Executing generated code...")
+            output, success = self.code_executor.execute_code(code)
+            logger.info(f"{'✅' if success else '❌'} Code execution {'succeeded' if success else 'failed'}")
+            
+            # Format response - only show output
+            answer = self.code_executor.format_code_response(query, output, success)
+            confidence = self.code_executor.get_code_confidence(query, success)
+            
+            logger.info(f"📋 Response formatted with confidence: {confidence}")
+            
+            # Extract insights from code execution
+            insights = []
+            if success and output:
+                insights.append(f"Executed code analysis on complete dataset")
+                insights.append(f"Data loaded from: {csv_file_path}")
+                if "found" in output.lower():
+                    insights.append("Specific records found in dataset")
+            
+            # Update session last accessed time
+            session_cache.update_session_access(session_id)
+            
+            return QueryResponse(
+                query=query,
+                answer=answer,
+                insights=insights,
+                data_points={"execution_success": success, "code_generated": True},
+                confidence=confidence,
+                limitations="Analysis performed on complete dataset" if success else "Code execution failed",
+                timestamp=datetime.now()
+            )
+            
+        except Exception as e:
+            logger.error(f"❌ Error in code query processing: {str(e)}")
+            logger.error(f"❌ Traceback: {traceback.format_exc()}")
+            return QueryResponse(
+                query=query,
+                answer=f"Error in code execution: {str(e)}",
+                insights=[],
+                data_points={},
+                confidence="low",
+                limitations=f"Code execution error: {str(e)}",
+                timestamp=datetime.now()
+            )
+    
+    async def _process_ai_query(self, session_id: str, query: str, df: pd.DataFrame) -> QueryResponse:
+        """Process queries using AI analysis"""
+        try:
             # Generate text summary of data for AI analysis
             data_text_summary = self.data_processor.convert_to_text_summary(df)
             
@@ -77,19 +174,18 @@ class QueryEngine:
             # Update session last accessed time
             session_cache.update_session_access(session_id)
             
-            logger.info(f"✅ Query processed successfully with {response.confidence} confidence")
+            logger.info(f"✅ AI query processed successfully with {response.confidence} confidence")
             return response
             
         except Exception as e:
-            logger.error(f"❌ Error processing query: {str(e)}")
-            # Return error response
+            logger.error(f"❌ Error in AI query processing: {str(e)}")
             return QueryResponse(
                 query=query,
-                answer=f"Error processing query: {str(e)}",
+                answer=f"Error in AI analysis: {str(e)}",
                 insights=[],
                 data_points={},
                 confidence="low",
-                limitations=f"Processing error: {str(e)}",
+                limitations=f"AI processing error: {str(e)}",
                 timestamp=datetime.now()
             )
     
